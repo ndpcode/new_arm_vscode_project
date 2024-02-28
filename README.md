@@ -1,10 +1,10 @@
-# Create a new embdedded ARM project in Visual Studio Code
-Instruction for creating a new ARM embedded project in Visual Studio Code.
+# Create a new embedded ARM project in Visual Studio Code
+Instruction for creating a new ARM embedded project in Visual Studio Code in Windows, for example creating project for STM32.
 
 # Инструкция по созданию нового проекта embedded ARM в Visual Studio Code
 Инструкция по настройке и развертыванию embedded C/C++ проекта для STM32 (и вообще любого ARM процессора), кросплатформенная (среда Linux или Windows) разработка в Visual Studio Code.
 Т.к. разработка кросплатформенная, то в основе используются программы среды Linux, точнее программы инструментария GNU.
-Для Linux настройка проще, поэтому ниже инструкция в первую очередь для Windows.
+Для Linux настройка проще, поэтому ниже инструкция для Windows.
 
 - **1. Установка инструментов GNU/Linux.**
     - 1.1. Необходим MSYS2, скачать с сайта msys2.org актуальную версию пакета и установить.
