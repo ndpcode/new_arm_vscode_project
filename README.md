@@ -172,7 +172,7 @@ prog:
 - **11. Настройка терминала SWO для вывода отладочных сообщений.**
     - 11.1. Созданная в п. 6.2 конфигурация "Debug (SWO console)" может не работать, соответственно будут отсутствовать сообщения в терминале Visual Studio Code, т.е. будет висеть пустой терминал. Ниже привожу инструкцию по настройке порта SWO для микроконтроллера STM32, для настройки понадобится STM32CubeIDE.
     - 11.2. Создать проект в STM32CubeIDE для своей модели микроконтроллера STM32, активировать порт SWO и скомпилировать проект (см. документацию STMicroelectronics). Далее необходимо будет скопировать некоторые файлы из STM32CubeIDE в проект Visual Studio Code.
-    - 11.3. Для активации порта SWO микроконтроллера необходимо создать и запустить один раз при инициализации (в начале функции main) следующую функцию:
+    - 11.3. Для активации порта SWO микроконтроллера необходимо в коде микроконтроллера создать и запустить один раз при инициализации (в начале функции main) следующую функцию:
 ```c
 void SWO_ITM_enable(void)
 {
@@ -203,7 +203,21 @@ void SWO_ITM_enable(void)
 }
 ```
 Функция SWO_ITM_enable() инициализирует порт SWO микроконтроллера STM32H743xx, для другого микроконтроллера STM32 может быть своя версия этой функции с настройкой других регистров по другим адресам (см. документацию).
--    - 11.4. Далее необходимо настроить GDB + OpenOCD + Cortex-Debug VSCode для поддержки вывода через порт SWO. Создать каталог "swo_config" в корне проекта Visual Studio Code (можно каталог с другим именем). В каталоге "swo_config" создать файл конфигурации "debug_with_swo.cfg" (можно свое имя файла) со следующим содержанием:
+-    - 11.4. В коде микроконтроллера необходимо переопределить низкоуровневый вывод данных в направление порта SWO. Для этого в исходный код микроконтроллера (например в файл main.c) добавить следующее переопределение функции _write:
+```c
+int _write(int file, char *ptr, int len)
+{
+  int DataIdx;
+
+	for (DataIdx = 0; DataIdx < len; DataIdx++)
+	{
+		ITM_SendChar(*ptr++);
+	}
+	return len;
+}
+```
+После этого вывод сообщений, например функцией printf, будет происходить в порт SWO.
+-    - 11.5. Далее необходимо настроить GDB + OpenOCD + Cortex-Debug VSCode для поддержки вывода через порт SWO. Создать каталог "swo_config" в корне проекта Visual Studio Code (можно каталог с другим именем). В каталоге "swo_config" создать файл конфигурации "debug_with_swo.cfg" (можно свое имя файла) со следующим содержанием:
 ```
 #----------------------------------------------
 source [find interface/stlink-dap.cfg]
@@ -251,10 +265,10 @@ source [find swo_config/swv.tcl]
 ```
 Этот файл сгенерирован автоматически STM32CubeIDE. Для другого микроконтроллера необходимо взять этот файл в корне проекта STM32CubeIDE. Обратить внимание, что в этом файле находятся ссылки на файлы stm32h7x.cfg и swv.tcl - необходимо прописать к ним путь через "swo_config", как сделано выше.
 
--    - 11.5. Файл stm32h7x.cfg (для другого микроконтроллера соответственно другой файл с другим именем) взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts\target". Этот файл копируется в каталог "swo_config" проекта Visual Studio Code. Мне также потребовалось в начале файла stm32h7x.cfg прописать пути к файлам mem_helper.tcl и gdb_helper.tcl.
-     - 11.6. Файлы mem_helper.tcl и gdb_helper.tcl взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts" и поместить в каталог "swo_config" проекта Visual Studio Code.
-     - 11.7. Файл swv.tcl взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts\board" и поместить в каталог "swo_config" проекта Visual Studio Code.
-     - 11.8. Добавить в "\.vscode\launch.json" следующую конфигурацию:
+-    - 11.6. Файл stm32h7x.cfg (для другого микроконтроллера соответственно другой файл с другим именем) взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts\target". Этот файл копируется в каталог "swo_config" проекта Visual Studio Code. Мне также потребовалось в начале файла stm32h7x.cfg прописать пути к файлам mem_helper.tcl и gdb_helper.tcl.
+     - 11.7. Файлы mem_helper.tcl и gdb_helper.tcl взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts" и поместить в каталог "swo_config" проекта Visual Studio Code.
+     - 11.8. Файл swv.tcl взять из установочного каталога STM32CubeIDE, например из каталога "C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.debug.openocd_2.1.0.202306221132\resources\openocd\st_scripts\board" и поместить в каталог "swo_config" проекта Visual Studio Code.
+     - 11.9. Добавить в "\.vscode\launch.json" следующую конфигурацию:
 ```json
 {
             "name":"Debug with SWO",
@@ -288,8 +302,8 @@ source [find swo_config/swv.tcl]
         }
 ```
 Соответственно для другого микроконтроллера прописать другие имена в этом файле. Сохранить файл launch.json и убедиться, что конфигурация отладки "Debug with SWO" появилась в Visual Studio Code.
--    - 11.9. Запустить отладку с конфигурацией "Debug with SWO".
-     - 11.10. Для вывода отладочных сообщений использовать стандартную функцию
+-    - 11.10. Запустить отладку с конфигурацией "Debug with SWO".
+     - 11.11. Для вывода отладочных сообщений использовать стандартную функцию
 ```c
 printf("Hello world\n");
 ```
