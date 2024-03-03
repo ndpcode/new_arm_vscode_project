@@ -1,0 +1,78 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug",
+			"type": "cortex-debug",
+			"request": "launch",
+			"servertype": "openocd",
+			"cwd": "${workspaceRoot}",			
+			"executable": "build/${workspaceFolderBasename}.elf",
+			"svdFile": "STM32H743.svd",
+			"configFiles": [
+				"interface/stlink.cfg",
+				"target/stm32h7x.cfg"
+			],
+			"preLaunchTask": "Build"
+		},
+        {
+            "name": "Debug (SWO console)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/${workspaceFolderBasename}.elf",
+            "svdFile": "STM32H743.svd",
+            "configFiles": [
+				"interface/stlink.cfg",
+				"target/stm32h7x.cfg"
+			],
+			"preLaunchTask": "Build",
+            "swoConfig": 
+            {
+                "enabled": true,
+                "cpuFrequency": 480000000,
+                "swoFrequency": 2000000,
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "port": 0,
+                        "label": "output",
+                        "encoding":"ascii"
+                    }
+                ]
+            }
+        },
+        {
+            "name":"Debug with SWO",
+            "showDevDebugOutput": "raw",
+            "preLaunchTask": "Build",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/${workspaceFolderBasename}.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "device": "STM32H743BI",
+			"configFiles": [
+                "${workspaceRoot}/swo_config/debug_with_swo.cfg"
+			],
+            "svdFile": "STM32H743.svd",
+            "interface": "swd",
+            "swoConfig":{
+                "enabled":true,
+                "source":"probe",
+                "swoFrequency": 2000000,
+                "cpuFrequency":480000000,
+                "decoders": [
+                    {
+                        "port": 0,
+                        "type": "console",
+                        "label": "SWO output",
+                        "encoding":"ascii"
+                    }
+                ]
+            }                
+        }
+	]
+}

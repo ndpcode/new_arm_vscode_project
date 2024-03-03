@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "vscode_stm32_c_cpp_properties",
+            "compilerPath": "arm-none-eabi-gcc",
+            "includePath": [
+                "${workspaceRoot}/**"
+            ],
+            "defines": [
+                "STM32H743xx",
+				"USE_HAL_DRIVER"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm"
+        }
+    ],
+    "version": 4
+}
